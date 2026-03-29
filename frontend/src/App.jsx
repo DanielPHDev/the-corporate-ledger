@@ -8,7 +8,7 @@ function App() {
   useEffect(() => {
     // Para testar no seu computador use a url abaixo. 
     // Quando fizermos o deploy, trocaremos essa URL pela url do Render.
-    fetch('http://127.0.0.1:5000/api/layoffs')
+    fetch('https://backend-layoff.onrender.com/api/layoffs')
       .then(resposta => resposta.json())
       .then(dados => setEmpresas(dados))
   }, [])
