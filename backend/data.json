@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "name": "Google",
+    "sector": "Alphabet Inc.",
+    "layoffs": "12,000",
+    "icon": "G"
+  },
+  {
+    "id": 2,
+    "name": "Meta",
+    "sector": "Social Media",
+    "layoffs": "11,000",
+    "icon": "M"
+  },
+  {
+    "id": 3,
+    "name": "Amazon",
+    "sector": "E-commerce / AWS",
+    "layoffs": "27,000",
+    "icon": "A"
+  }
+]
