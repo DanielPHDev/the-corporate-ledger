@@ -1,43 +1,59 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-import requests # <- Essa é a nova ferramenta mágica!
+import requests
+import csv
 
 app = Flask(__name__)
 CORS(app)
 
 @app.route('/')
 def home():
-    return "API do The Corporate Ledger rodando!"
+    return "API do LayoffIn conectada a dados reais da comunidade!"
 
 @app.route('/api/layoffs')
 def get_layoffs():
-    # 1. O Python vai "acessar" essa URL na internet
-    # (No futuro, você pode trocar essa URL por uma API real de notícias ou um GitHub público com CSVs de demissões)
-    url_dos_dados = "https://raw.githubusercontent.com/danielphdev/mock-data/main/layoffs.json"
+    # Esse é um arquivo público real no GitHub de um analista de dados 
+    # que contém uma extração dos dados originais de demissões
+    url_csv = "https://raw.githubusercontent.com/AlexTheAnalyst/MySQL-YouTube-Series/main/layoffs.csv"
     
     try:
-        # 2. Fazendo o pedido para a internet
-        resposta = requests.get('https://jsonplaceholder.typicode.com/users')
-        dados_da_internet = resposta.json()
+        # 1. O Python vai baixar o arquivo de texto bruto
+        resposta = requests.get(url_csv)
+        resposta.encoding = 'utf-8'
         
-        # 3. Como os dados da internet vêm de outro formato, nós "traduzimos" 
-        # para o formato exato que o seu React (os cartões) está esperando.
+        # 2. Transformamos o texto em um leitor de tabela
+        linhas = resposta.text.splitlines()
+        leitor_csv = csv.DictReader(linhas)
+        
         empresas_formatadas = []
-        for index, usuario in enumerate(dados_da_internet[:6]): # Pegando os 6 primeiros
+        contador = 1
+        
+        # 3. Passamos linha por linha do arquivo do analista
+        for linha in leitor_csv:
+            # Pula as empresas que não divulgaram o número exato (NULL ou vazio)
+            if linha["total_laid_off"] == "NULL" or not linha["total_laid_off"]:
+                continue
+                
+            # Cria a caixinha do jeito que o nosso React está esperando
             nova_empresa = {
-                "id": usuario["id"],
-                "name": usuario["company"]["name"], # Pega o nome da empresa fictícia
-                "sector": usuario["company"]["catchPhrase"],
-                "layoffs": str((index + 1) * 1500), # Inventando um número para testar
-                "icon": usuario["company"]["name"][0] # Pega a primeira letra
+                "id": contador,
+                "name": linha["company"],
+                "sector": linha["industry"],
+                "layoffs": linha["total_laid_off"],
+                "icon": linha["company"][0].upper() if linha["company"] else "🏢"
             }
             empresas_formatadas.append(nova_empresa)
+            contador += 1
             
+            # Pegamos apenas as 30 primeiras para formar 5 linhas perfeitas de 6 cartões
+            if contador > 30:
+                break
+                
         return jsonify(empresas_formatadas)
         
     except Exception as e:
-        # Se a internet falhar ou a API estiver fora do ar, ele avisa o erro
-        return jsonify({"erro": "Não foi possível buscar os dados da internet"}), 500
+        print("Erro:", e)
+        return jsonify({"erro": "Falha ao buscar dados no servidor"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
