@@ -4,57 +4,51 @@ import requests
 import csv
 
 app = Flask(__name__)
+# O CORS permite que o frontend se comunique livremente com o backend
 CORS(app)
 
 @app.route('/')
 def home():
-    return "API do LayoffIn conectada a dados reais da comunidade!"
+    return "API do LayoffIn conectada ao Google Sheets!"
 
 @app.route('/api/layoffs')
 def get_layoffs():
-    # Esse é um arquivo público real no GitHub de um analista de dados 
-    # que contém uma extração dos dados originais de demissões
-    url_csv = "https://raw.githubusercontent.com/AlexTheAnalyst/MySQL-YouTube-Series/main/layoffs.csv"
+    # O seu link oficial do Google Sheets já no formato CSV
+    url_planilha = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSgUuff6rCIs4HmwNILXcq5z8hCopNPkq2qeyhiyfvOh11yPOm_5LfvfdMHtNAAJ2xvUWe97fxbTc-B/pub?output=csv"
     
     try:
-        # 1. O Python vai baixar o arquivo de texto bruto
-        resposta = requests.get(url_csv)
-        resposta.encoding = 'utf-8'
+        # 1. Faz o download do arquivo atualizado no Google
+        resposta = requests.get(url_planilha)
+        resposta.encoding = 'utf-8' # Evita problemas com acentuação
         
-        # 2. Transformamos o texto em um leitor de tabela
+        # 2. Prepara o arquivo para o Python ler linha por linha
         linhas = resposta.text.splitlines()
         leitor_csv = csv.DictReader(linhas)
         
         empresas_formatadas = []
-        contador = 1
-        
-        # 3. Passamos linha por linha do arquivo do analista
-        for linha in leitor_csv:
-            # Pula as empresas que não divulgaram o número exato (NULL ou vazio)
-            if linha["total_laid_off"] == "NULL" or not linha["total_laid_off"]:
+        for index, linha in enumerate(leitor_csv):
+            # Trava de segurança: se a linha da planilha estiver vazia, ele pula
+            if not linha.get("Empresa") or linha["Empresa"].strip() == "":
                 continue
                 
-            # Cria a caixinha do jeito que o nosso React está esperando
+            # 3. Monta o cartãozinho do jeito que o React espera
             nova_empresa = {
-                "id": contador,
-                "name": linha["company"],
-                "sector": linha["industry"],
-                "layoffs": linha["total_laid_off"],
-                "icon": linha["company"][0].upper() if linha["company"] else "🏢",
-                "date": linha["date"],
+                "id": index + 1,
+                "name": linha["Empresa"].strip(),
+                "sector": linha["Setor"].strip(),
+                "layoffs": linha["Demissoes"].strip(),
+                "icon": linha["Empresa"].strip()[0].upper(), # Pega a 1ª letra para o fallback
+                "date": linha["Data"].strip()
             }
             empresas_formatadas.append(nova_empresa)
-            contador += 1
             
-            # Pegamos apenas as 30 primeiras para formar 5 linhas perfeitas de 6 cartões
-            if contador > 30:
-                break
-                
-        return jsonify(empresas_formatadas)
+        # 4. Retornamos a lista invertida [::-1] 
+        # Assim, a última linha que você adicionar na planilha aparece no TOPO do site!
+        return jsonify(empresas_formatadas[::-1])
         
     except Exception as e:
-        print("Erro:", e)
-        return jsonify({"erro": "Falha ao buscar dados no servidor"}), 500
+        print("Erro no servidor:", e)
+        return jsonify({"erro": "Falha ao ler os dados da planilha"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
