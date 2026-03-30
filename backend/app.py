@@ -40,7 +40,8 @@ def get_layoffs():
                 "name": linha["company"],
                 "sector": linha["industry"],
                 "layoffs": linha["total_laid_off"],
-                "icon": linha["company"][0].upper() if linha["company"] else "🏢"
+                "icon": linha["company"][0].upper() if linha["company"] else "🏢",
+                "date": linha["date"],
             }
             empresas_formatadas.append(nova_empresa)
             contador += 1

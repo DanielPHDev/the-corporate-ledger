@@ -88,6 +88,7 @@ function App() {
                 <div className="mt-auto pt-4 w-full border-t border-outline-variant/5">
                   <p className="text-[11px] font-bold text-secondary uppercase mb-1">Total de demissões</p>
                   <p className="text-2xl font-manrope font-extrabold text-primary">{empresa.layoffs}</p>
+                  <p className="text-[10px] text-on-surface-variant font-medium mt-1">Data: {empresa.date}</p>
                 </div>
               </article>
             ))}
