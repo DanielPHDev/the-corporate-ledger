@@ -1,28 +1,39 @@
 import { useEffect, useState } from 'react'
 
-// 1. CRIAMOS UM MINI-COMPONENTE SÓ PARA O LOGO
+// O "Tanque de Guerra" dos logos: tenta 3 opções diferentes!
 function LogoEmpresa({ nome, icone }) {
-  // O React agora "lembra" se a imagem deu erro
-  const [deuErro, setDeuErro] = useState(false);
+  // Começamos na tentativa 1
+  const [tentativa, setTentativa] = useState(1);
 
-  // Limpamos o nome (tira espaços e pontuações) para tentar achar o site
+  // Limpamos o nome para adivinhar o site
   const dominio = `${nome.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`;
-  const urlLogo = `https://logo.clearbit.com/${dominio}`;
 
-  // Se o Clearbit não achar o logo e der erro, mostramos a letra inicial
-  if (deuErro) {
-    return <span className="text-2xl font-bold text-primary">{icone}</span>;
+  // Tentativa 1: Clearbit (Melhor qualidade)
+  if (tentativa === 1) {
+    return (
+      <img
+        src={`https://logo.clearbit.com/${dominio}`}
+        alt={nome}
+        className="w-10 h-10 object-contain"
+        onError={() => setTentativa(2)} // Se quebrar, pula pra tentativa 2
+      />
+    );
   }
 
-  // Se ainda não deu erro, tentamos mostrar a imagem
-  return (
-    <img
-      src={urlLogo}
-      alt={`Logo da ${nome}`}
-      className="w-10 h-10 object-contain"
-      onError={() => setDeuErro(true)} // Avisa o React que o link quebrou!
-    />
-  );
+  // Tentativa 2: Ícone do DuckDuckGo (Foge dos AdBlocks)
+  if (tentativa === 2) {
+    return (
+      <img
+        src={`https://icons.duckduckgo.com/ip3/${dominio}.ico`}
+        alt={nome}
+        className="w-10 h-10 object-contain"
+        onError={() => setTentativa(3)} // Se quebrar, pula pra letra inicial
+      />
+    );
+  }
+
+  // Tentativa 3: Mostra a letra inicial
+  return <span className="text-2xl font-bold text-primary">{icone}</span>;
 }
 
 
@@ -42,7 +53,6 @@ function App() {
         <div className="flex items-center justify-between px-8 py-3 w-full max-w-screen-2xl mx-auto">
           <div className="flex items-center gap-6 flex-1">
             
-            {/* Adicionando a logo do seu projeto de volta ao lado do nome! */}
             <div className="flex items-center gap-2">
               <img src="/logo.jpg" alt="Logo LayoffIn" className="w-8 h-8 rounded-md" />
               <span className="text-xl font-bold font-manrope">LayoffIn</span>
@@ -57,20 +67,18 @@ function App() {
       </header>
 
       <main className="pt-24 pb-12 px-6 max-w-screen-xl mx-auto">
-        {/* Título */}
         <section className="mb-12">
           <span className="text-primary font-bold text-xs tracking-[0.2em] uppercase mb-3 block">DanielPH Dev</span>
           <h1 className="text-5xl font-manrope font-extrabold text-on-surface tracking-tight">Painel de <span className="text-primary">Layoff</span></h1>
         </section>
 
-        {/* Grade de Empresas */}
         <section>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-5">
             
             {empresas.map((empresa) => (
               <article key={empresa.id} className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/5 shadow-sm flex flex-col items-center text-center">
                 
-                {/* 2. AQUI USAMOS O NOSSO NOVO MINI-COMPONENTE */}
+                {/* Nosso componente novo cuidando do logo */}
                 <div className="w-16 h-16 rounded-full bg-surface-container-low flex items-center justify-center mb-5 overflow-hidden border border-outline-variant/10">
                   <LogoEmpresa nome={empresa.name} icone={empresa.icon} />
                 </div>
