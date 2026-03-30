@@ -31,8 +31,8 @@ function App() {
       <main className="pt-24 pb-12 px-6 max-w-screen-xl mx-auto">
         {/* Título */}
         <section className="mb-12">
-          <span className="text-primary font-bold text-xs tracking-[0.2em] uppercase mb-3 block">Market Intelligence</span>
-          <h1 className="text-5xl font-manrope font-extrabold text-on-surface tracking-tight">Tech Layoff <span className="text-primary">Tracker</span></h1>
+          <span className="text-primary font-bold text-xs tracking-[0.2em] uppercase mb-3 block">DanielPH Dev</span>
+          <h1 className="text-5xl font-manrope font-extrabold text-on-surface tracking-tight">Painel de  <span className="text-primary">Layoff</span></h1>
         </section>
 
         {/* Grade de Empresas */}
