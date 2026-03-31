@@ -1,44 +1,41 @@
 import { useEffect, useState } from 'react'
 
-// O "Tanque de Guerra" dos logos: tenta 3 opções diferentes!
+// O nosso "Tanque de Guerra" dos logos continua intacto!
 function LogoEmpresa({ nome, icone }) {
-  // Começamos na tentativa 1
   const [tentativa, setTentativa] = useState(1);
-
-  // Limpamos o nome para adivinhar o site
   const dominio = `${nome.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`;
 
-  // Tentativa 1: Clearbit (Melhor qualidade)
   if (tentativa === 1) {
     return (
       <img
         src={`https://logo.clearbit.com/${dominio}`}
         alt={nome}
         className="w-10 h-10 object-contain"
-        onError={() => setTentativa(2)} // Se quebrar, pula pra tentativa 2
+        onError={() => setTentativa(2)} 
       />
     );
   }
 
-  // Tentativa 2: Ícone do DuckDuckGo (Foge dos AdBlocks)
   if (tentativa === 2) {
     return (
       <img
         src={`https://icons.duckduckgo.com/ip3/${dominio}.ico`}
         alt={nome}
         className="w-10 h-10 object-contain"
-        onError={() => setTentativa(3)} // Se quebrar, pula pra letra inicial
+        onError={() => setTentativa(3)} 
       />
     );
   }
 
-  // Tentativa 3: Mostra a letra inicial
   return <span className="text-2xl font-bold text-primary">{icone}</span>;
 }
 
 
 function App() {
   const [empresas, setEmpresas] = useState([])
+  
+  // 1. CRIAMOS UM ESTADO PARA GUARDAR O TEXTO DA BUSCA
+  const [busca, setBusca] = useState("")
 
   useEffect(() => {
     fetch('https://backend-layoff.onrender.com/api/layoffs')
@@ -46,9 +43,15 @@ function App() {
       .then(dados => setEmpresas(dados))
   }, [])
 
+  // 2. CRIAMOS A LISTA FILTRADA
+  // Ele olha para o nome da empresa e para o que você digitou. 
+  // O "toLowerCase()" serve para ignorar se você digitou com letra maiúscula ou minúscula.
+  const empresasFiltradas = empresas.filter((empresa) => 
+    empresa.name.toLowerCase().includes(busca.toLowerCase())
+  )
+
   return (
     <div className="bg-surface text-on-surface min-h-screen font-inter">
-      {/* Cabeçalho */}
       <header className="fixed top-0 w-full z-50 bg-[#faf9f6]/85 backdrop-blur-md">
         <div className="flex items-center justify-between px-8 py-3 w-full max-w-screen-2xl mx-auto">
           <div className="flex items-center gap-6 flex-1">
@@ -60,7 +63,16 @@ function App() {
 
             <div className="relative w-full max-w-md hidden md:block">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/60 text-sm">search</span>
-              <input className="w-full bg-surface-container-low border-none rounded-lg pl-10 pr-4 py-2 text-sm outline-none" placeholder="Pesquisar empresa..." type="text" />
+              
+              {/* 3. LIGAMOS O INPUT AO NOSSO ESTADO */}
+              <input 
+                className="w-full bg-surface-container-low border-none rounded-lg pl-10 pr-4 py-2 text-sm outline-none" 
+                placeholder="Pesquisar empresa..." 
+                type="text" 
+                value={busca}
+                onChange={(evento) => setBusca(evento.target.value)}
+              />
+              
             </div>
           </div>
         </div>
@@ -75,10 +87,11 @@ function App() {
         <section>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-5">
             
-            {empresas.map((empresa) => (
+            {/* 4. TROCAMOS "empresas.map" POR "empresasFiltradas.map" */}
+            {/* Agora o React só desenha na tela quem passou no filtro! */}
+            {empresasFiltradas.map((empresa) => (
               <article key={empresa.id} className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/5 shadow-sm flex flex-col items-center text-center">
                 
-                {/* Nosso componente novo cuidando do logo */}
                 <div className="w-16 h-16 rounded-full bg-surface-container-low flex items-center justify-center mb-5 overflow-hidden border border-outline-variant/10">
                   <LogoEmpresa nome={empresa.name} icone={empresa.icon} />
                 </div>
@@ -92,6 +105,13 @@ function App() {
                 </div>
               </article>
             ))}
+
+            {/* BÔNUS: Mensagem caso a busca não encontre nada */}
+            {empresasFiltradas.length === 0 && (
+              <div className="col-span-full text-center py-10 text-on-surface-variant">
+                Nenhuma empresa encontrada com o nome "{busca}".
+              </div>
+            )}
 
           </div>
         </section>
